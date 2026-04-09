@@ -3,8 +3,10 @@ package bachtx.myapp.sso_service.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.Instant;
+
 @Entity
-@Table(name = "user_social_connections")
+@Table(name = "oauth2_registered_client")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,11 +19,11 @@ public class Oauth2RegisteredClient extends BaseAuditEntity{
     @Column(name = "client_id", nullable = false)
     private String clientId;
     @Column(name = "client_id_issued_at", nullable = false)
-    private String clientIdIssuedAt;
+    private Instant clientIdIssuedAt;
     @Column(name = "client_secret", nullable = false)
     private String clientSecret;
     @Column(name = "client_secret_expires_at", nullable = false)
-    private String clientSecretExpiresAt;
+    private Instant clientSecretExpiresAt;
     @Column(name = "client_name", nullable = false)
     private String clientName;
     @Column(name = "client_authentication_methods", nullable = false)
