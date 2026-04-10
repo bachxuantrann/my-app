@@ -10,18 +10,25 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import bachtx.myapp.sso_service.security.CustomLogoutHandler;
+
 @Configuration
 @EnableMethodSecurity
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final CustomLogoutHandler customLogoutHandler;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .authorizeHttpRequests(authorize -> authorize
                         // Cho phép truy cập tự do vào các trang public và static resources
                         .requestMatchers("/login", "/register", "/forgot-password", "/assets/**", "/css/**", "/js/**").permitAll()
+                        // Phân quyền bắt buộc tài khoản là ADMIN mới được quản lý clients
+                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                         // Tất cả các request khác đều bắt buộc phải đăng nhập
                         .anyRequest().authenticated()
                 )
@@ -34,6 +41,7 @@ public class SecurityConfig {
                 // Cấu hình logout
                 .logout(logout -> logout
                         .logoutUrl("/logout")
+                        .addLogoutHandler(customLogoutHandler)
                         .logoutSuccessUrl("/login?logout")
                         .permitAll()
                 );

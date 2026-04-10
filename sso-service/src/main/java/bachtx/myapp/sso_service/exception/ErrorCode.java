@@ -9,7 +9,9 @@ public enum ErrorCode {
     ACCESS_DENIED(403,"AUTH_002", "Không có quyền truy cập"),
     INVALID_ENUM_VALUE(400,"VALIDATION_001", "Giá trị không hợp lệ"),
     INVALID_KEY(400,"VALIDATION_002", "Key không hợp lệ"),
-    INIT_ROLE_ERROR(500, "INIT_ROLE_001"," Không tìm thấy giá trị ROLE được khởi tạo")
+    INIT_ROLE_ERROR(500, "INIT_ROLE_001"," Không tìm thấy giá trị ROLE được khởi tạo"),
+    USER_EXISTED(400, "USER_001", "Tên đăng nhập đã tồn tại"),
+    CLIENT_NOT_FOUND(404, "CLIENT_001", "Không tìm thấy thông tin Client")
 
 
     ;

@@ -39,13 +39,15 @@ public class CustomUserDetailsService implements UserDetailsService {
                 userRepository.save(user);
             }
         }
-        // Lưu ý: Nếu user chưa verify email, bạn có thể set isEnabled = false để chặn đăng nhập
-        boolean isEnabled = UserStatusEnum.ACTIVE.name().equalsIgnoreCase(user.getStatus());
+        // Lưu ý: Fix bug so sánh Value ("Đã kích hoạt") thay vì Name ("ACTIVE")
+        boolean isEnabled = UserStatusEnum.ACTIVE.name().equalsIgnoreCase(user.getStatus()) ||
+                            UserStatusEnum.ACTIVE.getValue().equalsIgnoreCase(user.getStatus());
         Role role = roleRepository.findById(user.getRoleId())
                 .orElseThrow(() -> new RuntimeException("Lỗi dữ liệu: User không có Role hợp lệ"));
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role.getCode());
         return new CustomUserDetails(
                 user.getId(), user.getUsername(), user.getPassword(),
+                user.getEmail(), user.getEmailVerified() != null && user.getEmailVerified(),
                 Collections.singletonList(authority), isAccountNonLocked, isEnabled
         );
     }

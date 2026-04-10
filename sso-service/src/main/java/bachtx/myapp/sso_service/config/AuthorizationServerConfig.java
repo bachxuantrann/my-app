@@ -40,12 +40,19 @@ public class AuthorizationServerConfig {
                 // Áp dụng các cấu hình mặc định và bật OpenID Connect 1.0 bằng cú pháp Lambda DSL mới
                 .with(authorizationServerConfigurer, (authorizationServer) ->
                         authorizationServer
-                                .oidc(Customizer.withDefaults())
+                                .authorizationEndpoint(authorizationEndpoint ->
+                                        authorizationEndpoint.consentPage("/oauth2/consent")
+                                )
+                                .oidc(oidc -> oidc
+                                        .providerConfigurationEndpoint(Customizer.withDefaults())
+                                        .logoutEndpoint(Customizer.withDefaults())
+                                )
                 )
                 // Cấu hình điều hướng về trang đăng nhập nếu chưa xác thực
                 .exceptionHandling((exceptions) -> exceptions
                         .defaultAuthenticationEntryPointFor(
-                                new LoginUrlAuthenticationEntryPoint("/login"),
+                                // Phải khớp với context-path trong application.yaml
+                                new LoginUrlAuthenticationEntryPoint("/sso-service/login"),
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         )
                 );
@@ -57,7 +64,8 @@ public class AuthorizationServerConfig {
     @Bean
     public AuthorizationServerSettings authorizationServerSettings() {
         return AuthorizationServerSettings.builder()
-                .issuer("http://localhost:8080") // Đổi thành Domain thật của SSO sau khi deploy
+                // issuer phải khớp với context-path. Khi deploy thật thì đổi thành domain + context-path
+                .issuer("http://localhost:8080/sso-service")
                 .build();
     }
 
@@ -67,26 +75,19 @@ public class AuthorizationServerConfig {
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() {
-        KeyPair keyPair = generateRsaKey();
-        RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
-        RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-        RSAKey rsaKey = new RSAKey.Builder(publicKey)
-                .privateKey(privateKey)
-                .keyID(UUID.randomUUID().toString()) // Sinh ID ngẫu nhiên cho Key
-                .build();
-        JWKSet jwkSet = new JWKSet(rsaKey);
-        return new ImmutableJWKSet<>(jwkSet);
-    }
-
-    private static KeyPair generateRsaKey() {
-        KeyPair keyPair;
         try {
-            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-            keyPairGenerator.initialize(2048);
-            keyPair = keyPairGenerator.generateKeyPair();
+            java.io.InputStream is = getClass().getResourceAsStream("/sso-jwt.jks");
+            if (is == null) {
+                throw new IllegalStateException("Không tìm thấy sso-jwt.jks trong thư mục resources");
+            }
+            java.security.KeyStore keyStore = java.security.KeyStore.getInstance("JKS");
+            keyStore.load(is, "sso-secret".toCharArray());
+
+            RSAKey rsaKey = RSAKey.load(keyStore, "sso-jwt", "sso-secret".toCharArray());
+            JWKSet jwkSet = new JWKSet(rsaKey);
+            return new ImmutableJWKSet<>(jwkSet);
         } catch (Exception ex) {
-            throw new IllegalStateException(ex);
+            throw new IllegalStateException("Không thể load RSA KeyStore cho chữ ký số JWT", ex);
         }
-        return keyPair;
     }
 }
