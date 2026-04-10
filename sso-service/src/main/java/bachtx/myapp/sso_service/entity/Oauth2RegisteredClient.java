@@ -22,7 +22,7 @@ public class Oauth2RegisteredClient extends BaseAuditEntity{
     private Instant clientIdIssuedAt;
     @Column(name = "client_secret", nullable = false)
     private String clientSecret;
-    @Column(name = "client_secret_expires_at", nullable = false)
+    @Column(name = "client_secret_expires_at")  // nullable - secret không có ngày hết hạn
     private Instant clientSecretExpiresAt;
     @Column(name = "client_name", nullable = false)
     private String clientName;

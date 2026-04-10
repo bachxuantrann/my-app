@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import bachtx.myapp.sso_service.security.CustomAuthenticationSuccessHandler;
 import bachtx.myapp.sso_service.security.CustomLogoutHandler;
 
 @Configuration
@@ -19,26 +20,26 @@ import bachtx.myapp.sso_service.security.CustomLogoutHandler;
 public class SecurityConfig {
 
     private final CustomLogoutHandler customLogoutHandler;
+    private final CustomAuthenticationSuccessHandler successHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .authorizeHttpRequests(authorize -> authorize
-                        // Cho phép truy cập tự do vào các trang public và static resources
-                        .requestMatchers("/login", "/register", "/forgot-password", "/assets/**", "/css/**", "/js/**").permitAll()
-                        // Phân quyền bắt buộc tài khoản là ADMIN mới được quản lý clients
-                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
-                        // Tất cả các request khác đều bắt buộc phải đăng nhập
+                        .requestMatchers("/login", "/register", "/forgot-password",
+                                "/assets/**", "/css/**", "/js/**", "/error").permitAll()
+                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/profile").authenticated()
                         .anyRequest().authenticated()
                 )
-                // Cấu hình form login tùy chỉnh của chúng ta
                 .formLogin(form -> form
-                        .loginPage("/login") // Đường dẫn đến Controller trả về file HTML
-                        .loginProcessingUrl("/login-process") // Đường dẫn Spring Security dùng để bắt action submit form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login-process")
+                        // Redirect theo role: ADMIN → dashboard, USER → profile
+                        .successHandler(successHandler)
                         .permitAll()
                 )
-                // Cấu hình logout
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .addLogoutHandler(customLogoutHandler)

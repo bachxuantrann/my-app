@@ -51,8 +51,8 @@ public class AuthorizationServerConfig {
                 // Cấu hình điều hướng về trang đăng nhập nếu chưa xác thực
                 .exceptionHandling((exceptions) -> exceptions
                         .defaultAuthenticationEntryPointFor(
-                                // Phải khớp với context-path trong application.yaml
-                                new LoginUrlAuthenticationEntryPoint("/sso-service/login"),
+                                // Spring Security tự prepend context-path, chỉ cần relative path
+                                new LoginUrlAuthenticationEntryPoint("/login"),
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         )
                 );

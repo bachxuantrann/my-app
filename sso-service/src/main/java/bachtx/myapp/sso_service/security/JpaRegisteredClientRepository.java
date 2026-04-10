@@ -15,6 +15,26 @@ import org.springframework.security.oauth2.server.authorization.settings.TokenSe
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.Instant;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import bachtx.myapp.sso_service.entity.Oauth2RegisteredClient;
+import bachtx.myapp.sso_service.repository.Oauth2RegisteredClientRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
+import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,14 +52,15 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
                 .orElseGet(Oauth2RegisteredClient::new);
         entity.setClientId(registeredClient.getClientId());
 
-        if (registeredClient.getClientIdIssuedAt() != null) {
-            entity.setClientIdIssuedAt(registeredClient.getClientIdIssuedAt());
-        }
+        // Bug fix: luôn đảm bảo clientIdIssuedAt không null vì entity có NOT NULL constraint
+        entity.setClientIdIssuedAt(
+                registeredClient.getClientIdIssuedAt() != null
+                        ? registeredClient.getClientIdIssuedAt()
+                        : Instant.now()
+        );
         entity.setClientSecret(registeredClient.getClientSecret());
-
-        if (registeredClient.getClientSecretExpiresAt() != null) {
-            entity.setClientSecretExpiresAt(registeredClient.getClientSecretExpiresAt());
-        }
+        // clientSecretExpiresAt có thể null (secret không hết hạn)
+        entity.setClientSecretExpiresAt(registeredClient.getClientSecretExpiresAt());
         entity.setClientName(registeredClient.getClientName());
 
         // Nối mảng thành chuỗi cách nhau bởi dấu phẩy

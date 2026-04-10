@@ -29,17 +29,6 @@ spring:
       connect-timeout: 2000ms
   session:
     store-type: redis
-
-server:
-  port: 8080
-  servlet:
-    context-path: /sso-service
-
-logging:
-  level:
-    org.springframework.security: TRACE
-
-spring:
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
@@ -54,3 +43,13 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
+
+server:
+  port: 8080
+  servlet:
+    context-path: /sso-service
+
+logging:
+  level:
+    org.springframework.security: TRACE
+

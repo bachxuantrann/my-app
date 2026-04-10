@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${isEdit} ? 'SSO Admin - Sửa Client' : 'SSO Admin - Đăng Ký Client'">Client Form</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <h1>⚡ SSO Admin</h1>
+        <div class="badge">Identity Provider Management</div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section-title">Tổng Quan</div>
+        <a th:href="@{/admin/dashboard}" class="nav-item">Dashboard</a>
+        <div class="nav-section-title">Identity</div>
+        <a th:href="@{/admin/users}" class="nav-item">Quản Lý Người Dùng</a>
+        <div class="nav-section-title">OAuth2</div>
+        <a th:href="@{/admin/clients}" class="nav-item active">Quản Lý Clients</a>
+    </nav>
+    <div class="sidebar-footer">
+        <form th:action="@{/logout}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="logout-link">Đăng Xuất</button>
+        </form>
+    </div>
+</aside>
+
+<div class="main-content">
+    <header class="topbar">
+        <span class="topbar-title" th:text="${isEdit} ? 'Chỉnh Sửa Client' : 'Đăng Ký Client Mới'">Client Form</span>
+        <div class="topbar-right">
+            <a th:href="@{/admin/clients}" class="btn btn-outline">← Quay Lại</a>
+        </div>
+    </header>
+
+    <div class="page-content">
+        <div th:if="${errorMsg}" class="alert alert-error" th:text="${errorMsg}"></div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 th:text="${isEdit} ? 'Cập Nhật Thông Tin Client' : 'Đăng Ký ứng dụng vào SSO'"></h3>
+            </div>
+            <div class="card-body">
+                <form th:action="${isEdit} ? @{/admin/clients/{id}/edit(id=${client.id})} : @{/admin/clients/new}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Client ID *</label>
+                            <input type="text" name="clientId" class="form-control"
+                                   th:value="${client.clientId}" required
+                                   th:readonly="${isEdit}"
+                                   placeholder="my-react-app"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Client Name *</label>
+                            <input type="text" name="clientName" class="form-control"
+                                   th:value="${client.clientName}" required
+                                   placeholder="My React Application"/>
+                        </div>
+                        <div class="form-group" th:if="${!isEdit}">
+                            <label>Client Secret *</label>
+                            <input type="text" name="clientSecret" class="form-control"
+                                   required placeholder="Nhập secret bảo mật"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Redirect URIs (mỗi URI một dòng) *</label>
+                            <textarea name="redirectUris" class="form-control" rows="3"
+                                      placeholder="http://localhost:3000/callback"
+                                      th:text="${client.redirectUris}"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Post Logout Redirect URIs (mỗi URI một dòng)</label>
+                            <textarea name="postLogoutRedirectUris" class="form-control" rows="2"
+                                      placeholder="http://localhost:3000"
+                                      th:text="${client.postLogoutRedirectUris}"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Scopes (cách nhau bằng dấu phẩy) *</label>
+                            <input type="text" name="scopes" class="form-control"
+                                   th:value="${client.scopes}"
+                                   placeholder="openid,profile,email,roles"/>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; padding: 16px; background: rgba(15,23,42,0.4); border-radius: 8px; border: 1px solid var(--border);">
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Grant Types mặc định:</div>
+                        <div style="font-size: 12px; color: #a78bfa; font-family: monospace">authorization_code, refresh_token, client_credentials</div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary"
+                                th:text="${isEdit} ? 'Cập Nhật' : 'Đăng Ký Client'">Submit</button>
+                        <a th:href="@{/admin/clients}" class="btn btn-outline">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
