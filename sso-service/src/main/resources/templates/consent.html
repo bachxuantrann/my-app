@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSO - Xét Duyệt Quyền</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .consent-box {
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px solid var(--border);
+        }
+        .scope-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .scope-item input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+        .scope-item label {
+            font-size: 15px;
+            color: var(--text-main);
+            font-weight: 500;
+            margin: 0;
+        }
+        .btn-cancel {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+        .btn-cancel:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h2>Ủy Quyền Ứng Dụng</h2>
+            <p>Ứng dụng <strong th:text="${clientName}" style="color: #93c5fd;">ClientName</strong> muốn truy cập vào tài khoản <b th:text="${principalName}">User</b> của bạn.</p>
+        </div>
+
+        <form th:action="@{/oauth2/authorize}" method="post">
+            <input type="hidden" name="client_id" th:value="${clientId}">
+            <input type="hidden" name="state" th:value="${state}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div class="consent-box" th:if="${!scopes.isEmpty()}">
+                <p style="margin-bottom: 15px; color: var(--text-muted); font-size: 14px;">Quyền yêu cầu cấp mới:</p>
+                <div class="scope-item" th:each="scope : ${scopes}">
+                    <input type="checkbox" name="scope" th:value="${scope}" th:id="${scope}" checked>
+                    <label th:for="${scope}" th:text="${scope}"></label>
+                </div>
+            </div>
+
+            <div class="consent-box" th:if="${!previouslyApprovedScopes.isEmpty()}">
+                <p style="margin-bottom: 15px; color: var(--success); font-size: 14px;">Quyền đã được cấp trước đó:</p>
+                <div class="scope-item" th:each="scope : ${previouslyApprovedScopes}">
+                    <input type="checkbox" th:id="${scope}" checked disabled>
+                    <label th:for="${scope}" th:text="${scope}"></label>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-primary btn-cancel" type="button" onclick="cancelConsent()">Từ chối</button>
+                <button class="btn-primary" type="submit" id="submit-consent">Gấp Giấy Phép</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function cancelConsent() {
+            document.consent_form.reset();
+            document.consent_form.submit();
+        }
+    </script>
+</body>
+</html>
