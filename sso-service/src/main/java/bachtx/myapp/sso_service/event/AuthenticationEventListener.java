@@ -1,6 +1,5 @@
 package bachtx.myapp.sso_service.event;
 
-import bachtx.myapp.sso_service.entity.User;
 import bachtx.myapp.sso_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +35,7 @@ public class AuthenticationEventListener {
                 user.setLockedUntil(LocalDateTime.now().plusMinutes(LOCK_TIME_MINUTES));
                 log.warn("Account locked for user: {} due to excessive failed attempts", username);
             }
-            
+
             user.setFailedLoginAttempts(failedAttempts);
             userRepository.save(user);
         });

@@ -21,7 +21,10 @@ public class DatabaseMigrationRunner implements CommandLineRunner {
             jdbcTemplate.execute("ALTER TABLE oauth2_registered_client ALTER COLUMN client_secret_expires_at DROP NOT NULL;");
             log.info("Successfully dropped NOT NULL constraint on client_secret_expires_at in oauth2_registered_client table.");
 
-            // Also check if audit_logs table exists and drop index if needed or other minor cleanups.
+            // Fix user_id datatype mismatch
+            jdbcTemplate.execute("ALTER TABLE audit_logs RENAME COLUMN user_id TO username;");
+            jdbcTemplate.execute("ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS user_id BIGINT;");
+            log.info("Migrated audit_logs table (renamed user_id to username and added BIGINT user_id).");
         } catch (Exception e) {
             log.warn("Migration warning (might have been applied already): {}", e.getMessage());
         }

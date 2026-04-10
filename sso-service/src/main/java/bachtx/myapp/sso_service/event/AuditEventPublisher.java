@@ -9,6 +9,10 @@ import org.springframework.security.authentication.event.AuthenticationFailureBa
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.stereotype.Component;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +42,20 @@ public class AuditEventPublisher {
         auditMessage.put("username", username);
         auditMessage.put("details", details);
         auditMessage.put("timestamp", LocalDateTime.now().toString());
+
+        try {
+            ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attrs != null) {
+                HttpServletRequest request = attrs.getRequest();
+                String ipAddress = request.getHeader("X-Forwarded-For");
+                if (ipAddress == null || ipAddress.isEmpty()) {
+                    ipAddress = request.getRemoteAddr();
+                }
+                auditMessage.put("ipAddress", ipAddress);
+                auditMessage.put("userAgent", request.getHeader("User-Agent"));
+            }
+        } catch (Exception ignored) {
+        }
 
         try {
             kafkaTemplate.send(KafkaConfig.AUDIT_TOPIC, username, auditMessage);

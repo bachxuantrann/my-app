@@ -13,6 +13,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 @Controller
 @RequestMapping("/admin/audit-logs")
 @RequiredArgsConstructor
@@ -24,11 +30,26 @@ public class AuditLogAdminController {
     @GetMapping
     public String listAuditLogs(@RequestParam(defaultValue = "0") int page,
                                 @RequestParam(defaultValue = "20") int size,
+                                @RequestParam(required = false) String username,
+                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
                                 Model model) {
-        Page<AuditLog> logPage = auditLogRepository.findAll(
+
+        if (username != null && username.isBlank()) username = null;
+        
+        LocalDateTime startDateTime = (startDate != null) ? startDate.atStartOfDay() : null;
+        LocalDateTime endDateTime = (endDate != null) ? endDate.atTime(LocalTime.MAX) : null;
+
+        Page<AuditLog> logPage = auditLogRepository.findWithFilters(
+                username, startDateTime, endDateTime,
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
         );
         model.addAttribute("logPage", logPage);
+        model.addAttribute("username", username);
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", logPage.getTotalPages());
 
         String retentionDays = systemSettingRepository.findById("audit_log_retention_days")
                 .map(SystemSetting::getValue)

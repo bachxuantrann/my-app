@@ -14,8 +14,13 @@ public class AuditLog extends BaseAuditEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
     @Column(name = "user_id")
-    private String userId;
+    private Long userId;
+
+    @Column(name = "username")
+    private String username;
+    
     @Column(name = "action")
     private String action;
     @Column(name = "ip_address")

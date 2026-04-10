@@ -2,7 +2,9 @@ package bachtx.myapp.sso_service.event;
 
 import bachtx.myapp.sso_service.config.KafkaConfig;
 import bachtx.myapp.sso_service.entity.AuditLog;
+import bachtx.myapp.sso_service.entity.User;
 import bachtx.myapp.sso_service.repository.AuditLogRepository;
+import bachtx.myapp.sso_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -17,6 +20,7 @@ import java.util.Map;
 public class AuditLogConsumer {
 
     private final AuditLogRepository auditLogRepository;
+    private final UserRepository userRepository;
 
     @KafkaListener(topics = KafkaConfig.AUDIT_TOPIC, groupId = "${spring.kafka.consumer.group-id}")
     public void consumeAuditLog(Map<String, Object> message) {
@@ -25,11 +29,22 @@ public class AuditLogConsumer {
             String eventType = (String) message.get("eventType");
             String username = (String) message.get("username");
             String details = (String) message.get("details");
+            String ipAddress = (String) message.get("ipAddress");
+            String userAgent = (String) message.get("userAgent");
             
             AuditLog auditLog = new AuditLog();
-            auditLog.setUserId(username);
+            
+            // Map User ID if exists
+            if (username != null) {
+                Optional<User> optionalUser = userRepository.findByUsername(username);
+                optionalUser.ifPresent(user -> auditLog.setUserId(user.getId()));
+            }
+            
+            auditLog.setUsername(username);
             auditLog.setAction(eventType);
             auditLog.setDetails(details);
+            auditLog.setIpAddress(ipAddress);
+            auditLog.setUserAgent(userAgent);
             auditLog.setCreatedAt(LocalDateTime.now());
             auditLog.setCreatedBy("system");
 
