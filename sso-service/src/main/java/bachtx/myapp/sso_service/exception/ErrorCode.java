@@ -8,7 +8,10 @@ public enum ErrorCode {
     UNCATEGORIZED_EXCEPTION(500,"UNCATEGORIZED_ERROR", "Lỗi hệ thống, chưa xác định"),
     ACCESS_DENIED(403,"AUTH_002", "Không có quyền truy cập"),
     INVALID_ENUM_VALUE(400,"VALIDATION_001", "Giá trị không hợp lệ"),
-    INVALID_KEY(400,"VALIDATION_002", "Key không hợp lệ")
+    INVALID_KEY(400,"VALIDATION_002", "Key không hợp lệ"),
+    INIT_ROLE_ERROR(500, "INIT_ROLE_001"," Không tìm thấy giá trị ROLE được khởi tạo")
+
+
     ;
 
     private final int status;

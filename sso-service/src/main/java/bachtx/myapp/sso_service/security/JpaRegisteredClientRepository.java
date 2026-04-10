@@ -3,6 +3,7 @@ package bachtx.myapp.sso_service.security;
 import bachtx.myapp.sso_service.entity.Oauth2RegisteredClient;
 import bachtx.myapp.sso_service.repository.Oauth2RegisteredClientRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
@@ -14,6 +15,7 @@ import org.springframework.security.oauth2.server.authorization.settings.TokenSe
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -88,21 +90,31 @@ public class JpaRegisteredClientRepository implements RegisteredClientRepository
         Set<String> redirectUris = StringUtils.commaDelimitedListToSet(entity.getRedirectUris());
         Set<String> clientScopes = StringUtils.commaDelimitedListToSet(entity.getScopes());
 
-        return RegisteredClient.withId(String.valueOf(entity.getId()))
+        RegisteredClient.Builder builder = RegisteredClient.withId(String.valueOf(entity.getId()))
                 .clientId(entity.getClientId())
                 .clientSecret(entity.getClientSecret())
                 .clientName(entity.getClientName())
                 .clientAuthenticationMethods(methods ->
-                        clientAuthenticationMethods.forEach(method -> methods.add(new ClientAuthenticationMethod(method)))
-                )
+                        clientAuthenticationMethods.forEach(method -> methods.add(new ClientAuthenticationMethod(method))))
                 .authorizationGrantTypes(grants ->
-                        authorizationGrantTypes.forEach(grant -> grants.add(new AuthorizationGrantType(grant)))
-                )
+                        authorizationGrantTypes.forEach(grant -> grants.add(new AuthorizationGrantType(grant))))
                 .redirectUris(uris -> uris.addAll(redirectUris))
-                .scopes(scopes -> scopes.addAll(clientScopes))
-                // Bật PKCE bắt buộc cho các public client (như Mobile App)
-                .clientSettings(ClientSettings.builder().requireProofKey(true).build())
-                .tokenSettings(TokenSettings.builder().build())
-                .build();
+                .scopes(scopes -> scopes.addAll(clientScopes));
+
+        // Đọc JSON ngược lại thành Object
+        try {
+            if (StringUtils.hasText(entity.getClientSettings())) {
+                Map<String, Object> clientSettingsMap = objectMapper.readValue(entity.getClientSettings(), new TypeReference<>() {});
+                builder.clientSettings(ClientSettings.withSettings(clientSettingsMap).build());
+            }
+            if (StringUtils.hasText(entity.getTokenSettings())) {
+                Map<String, Object> tokenSettingsMap = objectMapper.readValue(entity.getTokenSettings(), new TypeReference<>() {});
+                builder.tokenSettings(TokenSettings.withSettings(tokenSettingsMap).build());
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Lỗi khi đọc JSON cấu hình Client", e);
+        }
+
+        return builder.build();
     }
 }

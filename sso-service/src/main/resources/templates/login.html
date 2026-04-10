@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>SSO - Đăng nhập</title>
+</head>
+<body>
+<h2>Đăng nhập Hệ thống </h2>
+
+<div th:if="${param.error}" style="color: red;">
+    Sai tài khoản hoặc mật khẩu, hoặc tài khoản đã bị khóa!
+</div>
+<div th:if="${param.logout}" style="color: green;">
+    Bạn đã đăng xuất thành công.
+</div>
+
+<form th:action="@{/login-process}" method="post">
+    <div>
+        <label>Tên đăng nhập:</label>
+        <input type="text" name="username" required autofocus/>
+    </div>
+    <div>
+        <label>Mật khẩu:</label>
+        <input type="password" name="password" required/>
+    </div>
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <button type="submit">Đăng nhập</button>
+</form>
+</body>
+</html>
