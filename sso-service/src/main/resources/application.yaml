@@ -29,8 +29,11 @@ spring:
       connect-timeout: 2000ms
   session:
     store-type: redis
+    timeout: 2h
+    redis:
+      namespace: sso:session
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -48,6 +51,12 @@ server:
   port: 8080
   servlet:
     context-path: /sso-service
+    session:
+      cookie:
+        name: SSO_SESSION
+        http-only: true
+        same-site: lax
+        max-age: -1
 
 logging:
   level:
