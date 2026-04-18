@@ -43,6 +43,9 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .addLogoutHandler(customLogoutHandler)
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .deleteCookies("SSO_SESSION", "JSESSIONID")
                         .logoutSuccessUrl("/login?logout")
                         .permitAll()
                 );
