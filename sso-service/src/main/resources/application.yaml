@@ -32,6 +32,8 @@ spring:
     timeout: 2h
     redis:
       namespace: sso:session
+    cookie:
+      name: SSO_SESSION
   kafka:
     bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9092}
     producer:
