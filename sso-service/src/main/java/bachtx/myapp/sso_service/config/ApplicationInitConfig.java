@@ -36,7 +36,6 @@ public class ApplicationInitConfig {
     public void initData() {
         initRole(UserRoleEnum.ADMIN);
         initRole(UserRoleEnum.USER);
-
         initAdmin();
     }
 
@@ -65,7 +64,7 @@ public class ApplicationInitConfig {
                     User admin = User.builder()
                             .username(ADMIN_USERNAME)
                             .password(passwordEncoder.encode(ADMIN_PASSWORD))
-                            .status(UserStatusEnum.ACTIVE.getValue())
+                            .status(UserStatusEnum.ACTIVE.name())
                             .roleId(adminRole.getId())
                             .build();
                     log.info("Init admin with username: {} success to database", ADMIN_USERNAME);
