@@ -36,7 +36,6 @@ public class ApplicationInitConfig {
     public void initData() {
         initRole(UserRoleEnum.ADMIN);
         initRole(UserRoleEnum.USER);
-
         initAdmin();
     }
 
