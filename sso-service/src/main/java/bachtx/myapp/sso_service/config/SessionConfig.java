@@ -20,6 +20,9 @@ public class SessionConfig {
         
         // Tắt Base64 để ID trong Cookie khớp hoàn toàn với ID trong Redis (giúp bạn dễ debug)
         serializer.setUseBase64Encoding(false);
+
+        // SameSite=Lax cho bảo mật (ngăn CSRF cross-site)
+        serializer.setSameSite("Lax");
         
         return serializer;
     }

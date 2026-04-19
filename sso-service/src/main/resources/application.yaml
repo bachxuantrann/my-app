@@ -54,6 +54,8 @@ server:
   servlet:
     context-path: /sso-service
     session:
+      # Chỉ dùng cookie để tracking session, ngăn Tomcat tạo JSESSIONID mặc định
+      tracking-modes: cookie
       cookie:
         name: SSO_SESSION
         http-only: true
